@@ -5,11 +5,23 @@ defmodule ConfigExt.Mixfile do
     [app: :config_ext,
      version: "0.0.1",
      elixir: "~> 1.3",
-     description: description(),
-     package: package(),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+
+     # Hex
+     description: description(),
+     package: package(),
+
+     # Docs
+     name: "ConfigExt",
+     source_url: github(),
+     homepage_url: github(),
+     docs: [
+       main: "ConfigExt",
+       extras: ["README.md"]
+     ]
+   ]
   end
 
   def application do
@@ -34,7 +46,9 @@ defmodule ConfigExt.Mixfile do
       files: ["lib/config_ext.ex", "mix.exs", "README.md", "LICENSE.md", "CHANGELOG.md"],
       maintainers: ["Leszek Zalewski"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/driv3r/config_ext"}
+      links: %{"GitHub" => github()}
     ]
   end
+
+  defp github, do: "https://github.com/driv3r/config_ext"
 end
