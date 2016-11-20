@@ -1,5 +1,7 @@
 # ConfigExt
 
+A bunch of common elixir config helpers to load config from environment variables or by executing a function. Part of the work was based on gist from [bitwalker](https://gist.github.com/bitwalker/a4f73b33aea43951fe19b242d06da7b9) and community practises (especially for using `{:system, "VAR"[, default]}` spec).
+
 ## Installation
 
 The package can be installed as:
