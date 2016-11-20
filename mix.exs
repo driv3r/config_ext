@@ -3,7 +3,7 @@ defmodule ConfigExt.Mixfile do
 
   def project do
     [app: :config_ext,
-     version: "0.1.0",
+     version: "0.0.1",
      elixir: "~> 1.3",
      description: description(),
      package: package(),
@@ -17,7 +17,9 @@ defmodule ConfigExt.Mixfile do
   end
 
   defp deps do
-    []
+    [
+      {:ex_doc, ">= 0.0.0", only: :dev}
+    ]
   end
 
   defp description do
