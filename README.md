@@ -10,7 +10,7 @@ The package can be installed as:
 
     ```elixir
     def deps do
-      [{:config_ext, "~> 0.1.0"}]
+      [{:config_ext, "~> 0.2.0"}]
     end
     ```
 
