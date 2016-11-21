@@ -14,17 +14,38 @@ The package can be installed as:
     end
     ```
 
-  2. Use module to fetch config from env var
+## Usage
 
-    ```elixir
-    # where LEVEL=debug
-    config :logger, :level, {:system, "LEVEL", "info"}
-    ConfigExt.get_env(:logger, :level) # => "debug"
-    ```
+You can use the module to load info from system environment variables like
 
-    or evaluate a function on runtime
+```elixir
+# where LEVEL=debug
+iex>
+ConfigExt.load({:system, "LEVEL")
+{:ok, "debug"}
+```
 
-    ```elixir
-    config :logger, :level, {:function, YourModule, :function_name, [:arg1, :arg2]}
-    ConfigExt.get_env(:logger, :level) # => YourModule.function_name(:arg1, :arg2)
-    ```
+or add default value as well
+
+```elixir
+# when LEVEL is empty
+iex> ConfigExt.load({:system, "LEVEL", "info"})
+{:ok, "info"}
+
+# or in different format
+iex> ConfigExt.load({:system, "LEVEL"}, "info")
+{:ok, "info"}
+```
+
+Of course it's meant to be run as part of other libaries, in order to load config dynamically, at the moment you can do it like:
+
+```elixir
+# i.e. in config.exs
+config :logger, level: {:system, "LEVEL", "info"}
+
+# then LEVEL=warn
+iex> Application.get_env(:logger, :level) |> ConfigExt.load("error")
+{:ok, "warn"}
+```
+
+See more in docs `ConfigExt.load/1` and `ConfigExt.load/2`.
