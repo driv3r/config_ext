@@ -8,6 +8,8 @@ defmodule ConfigExt do
 
       {:system, KEY}
       {:system, KEY, default}
+      {:function, Module, function_name} # which expands to below version with empty list of arguments
+      {:function, Module, function_name, [arg1, ...]}
 
   Returns a tuple with two elements:
 
@@ -32,6 +34,26 @@ defmodule ConfigExt do
       iex> ConfigExt.load({:system, "CONFIG_EXT_TEST", "bar"})
       {:ok, "bar"}
 
+  For input with function pattern.
+
+      defmodule Foo do
+        def bar, do: "baz"
+      end
+
+      iex> ConfigExt.load({:function, Foo, :bar, []})
+      {:ok, "baz"}
+
+  Function pattern should return a non `nil` value, otherwise it's an error.
+
+      defmodule Foo do
+        def bar, do: nil
+      end
+
+      iex> ConfigExt.load({:function, Foo, :bar, []})
+      {:error, "empty value"}
+
+  If the function doesn't exist or it's private you should get correct error message as well.
+
   For input without pattern.
 
       iex> ConfigExt.load(:error)
@@ -50,6 +72,22 @@ defmodule ConfigExt do
 
   def load({:system, key}), do: {:error, "ENV Key: #{inspect(key)}, is not a string"}
   def load({:system, key, default}), do: load({:system, key}, default)
+
+  def load({:function, module, function}) do
+    load({:function, module, function, []})
+  end
+
+  def load({:function, module, function, args})
+  when is_atom(function) and is_list(args) do
+    case Kernel.apply(module, function, args) do
+      nil -> {:error, "empty value"}
+      val -> {:ok, val}
+    end
+  rescue
+    e in UndefinedFunctionError -> {:error, Exception.message(e)}
+  end
+
+  def load({:function, _mod, _fun, _args}), do: {:error, "function needs to be an atom, and args a list of arguments"}
   def load(value), do: {:ok, value}
 
   defp error(key), do: {:error, "ENV Key: #{key} is missing"}
@@ -84,6 +122,26 @@ defmodule ConfigExt do
       iex> ConfigExt.load({:system, "CONFIG_EXT_TEST", "bar"}, "baz")
       {:ok, "bar"}
 
+  For input with function pattern.
+
+      defmodule Foo do
+        def bar, do: "baz"
+      end
+
+      iex> ConfigExt.load({:function, Foo, :bar, []}, "buz")
+      {:ok, "baz"}
+
+  Function pattern should return a non `nil` value, otherwise default value will get returned.
+
+      defmodule Foo do
+        def bar, do: nil
+      end
+
+      iex> ConfigExt.load({:function, Foo, :bar, []}, "buz")
+      {:ok, "buz"}
+
+  If the function doesn't exist or it's private you should get a `{:ok, default}` as well.
+
   For input without pattern.
 
       iex> ConfigExt.load(:error, "baz")
@@ -101,6 +159,17 @@ defmodule ConfigExt do
 
   def load({:system, key, user_default}, _default) do
     load({:system, key}, user_default)
+  end
+
+  def load({:function, module, function}, default) do
+    load({:function, module, function, []}, default)
+  end
+
+  def load({:function, module, function, args}, default) do
+    case load({:function, module, function, args}) do
+      {:error, _msg} -> {:ok, default}
+      {:ok, val}     -> {:ok, val}
+    end
   end
 
   def load(nil, default), do: {:ok, default}
