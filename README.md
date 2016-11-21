@@ -37,6 +37,17 @@ iex> ConfigExt.load({:system, "LEVEL"}, "info")
 {:ok, "info"}
 ```
 
+or execute a function instead
+
+```elixir
+defmodule Foo do
+  def bar(a), do: "baz-#{inspect(a)}"
+end
+
+iex> ConfigExt.load({:function, Foo, :bar, [:a]})
+{:ok, "baz-:a"}
+```
+
 Of course it's meant to be run as part of other libaries, in order to load config dynamically, at the moment you can do it like:
 
 ```elixir
