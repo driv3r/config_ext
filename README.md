@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/driv3r/config_ext.svg?branch=master)](https://travis-ci.org/driv3r/config_ext)
 [![Inline docs](http://inch-ci.org/github/driv3r/config_ext.svg)](http://inch-ci.org/github/driv3r/config_ext)
+[![Ebert](https://ebertapp.io/github/driv3r/config_ext.svg)](https://ebertapp.io/github/driv3r/config_ext)
 
 A bunch of common elixir config helpers to load config from environment variables or by executing a function. Part of the work was based on gist from [bitwalker](https://gist.github.com/bitwalker/a4f73b33aea43951fe19b242d06da7b9) and community practises (especially for using `{:system, "VAR"[, default]}` spec).
 
