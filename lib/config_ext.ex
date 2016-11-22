@@ -4,6 +4,46 @@ defmodule ConfigExt do
   """
 
   @doc """
+  Returns the **evaluated** value for `key` in `app`'s environment as a tuple.
+
+  If the configuration parameter does not exist, or pattern fails the function returns :error.
+
+  A drop in replacement for `Application.fetch_env/2`.
+  """
+  def fetch_env(app, key) do
+    case Application.fetch_env(app, key) do
+      {:ok, val} ->
+        case load(val) do
+          {:ok, value} -> {:ok, value}
+          {:error, _}  -> :error
+        end
+      :error -> :error
+    end
+  end
+
+  @doc """
+  Returns the **evaluated** value for `key` in `app`'s environment.
+
+  If the configuration parameter does not exist or pattern will fail, raises ArgumentError.
+
+  A drop in replacement for `Application.fetch_env!/2`.
+  """
+  def fetch_env!(app, key) do
+    Application.fetch_env!(app, key) |> load!
+  end
+
+  @doc """
+  Returns the **evaluated** value for `key` in `app`'s environment.
+
+  If the configuration parameter does not exist or pattern will fail, the function returns the default value.
+
+  A drop in replacement for `Application.get_env/3`.
+  """
+  def get_env(app, key, default \\ nil) do
+    Application.get_env(app, key, default) |> load!(default)
+  end
+
+  @doc """
   Same as `ConfigExt.load/1` but instead of tuple, returns the value directly and on `:error` raises `ArgumentError`.
 
   ## Examples
