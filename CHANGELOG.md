@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Wrapped `Application` functions for fetching config (`get_env/3`, `fetch_env/2` and `fetch_env!/2`).
+- Added `load!` function to return raw value without `:ok/:error` tuple.
 
 ## [0.2.0] - 2016-11-21
 ### Added

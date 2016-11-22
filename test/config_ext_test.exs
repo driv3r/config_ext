@@ -143,10 +143,153 @@ defmodule ConfigExtTest do
     end
   end
 
+  describe "ConfigExt.load!/1" do
+    test "input: {:system, key}, returns value" do
+      with_env "foo-var", fn ->
+        assert ConfigExt.load!({:system, @env}) === "foo-var"
+      end
+    end
+
+    test "input: nil, returns nil" do
+      assert ConfigExt.load!(nil) === nil
+    end
+
+    test "input: that would give error" do
+      assert_raise ArgumentError, fn -> ConfigExt.load!({:system, nil}) end
+    end
+  end
+
+  describe "ConfigExt.load!/2" do
+    test "input: {:system, key}, returns value" do
+      with_env "foo-var", fn ->
+        assert ConfigExt.load!({:system, @env}, "bar") === "foo-var"
+      end
+    end
+
+    test "input: nil, returns nil" do
+      assert ConfigExt.load!(nil, "bar") === "bar"
+    end
+
+    test "input: that would give error" do
+      assert ConfigExt.load!({:system, nil}, "bar") === "bar"
+    end
+  end
+
+  describe "ConfigExt.get_env/3" do
+    test "config: nil, default: nil, returns nil" do
+      assert ConfigExt.get_env(:config_ext, @env) === nil
+    end
+
+    test "config: nil, default: 'bar', returns 'bar'" do
+      assert ConfigExt.get_env(:config_ext, @env, "bar") === "bar"
+    end
+
+    test "config: 'foo', default: 'bar', returns 'foo'" do
+      with_app "foo", fn ->
+        assert ConfigExt.get_env(:config_ext, @env, "bar") === "foo"
+      end
+    end
+
+    test "config: {:system, #{@env}}, #{@env}=baz default: 'bar', returns #{@env}" do
+      with_env "baz", fn ->
+        with_app {:system, @env}, fn ->
+          assert ConfigExt.get_env(:config_ext, @env, "bar") === "baz"
+        end
+      end
+    end
+
+    test "config: {:function, ConfigExtTest, :some_args, [:a, :b]}, default: 'bar', returns 'bar-:a-:b'" do
+      with_app {:function, ConfigExtTest, :some_args, [:a, :b]}, fn ->
+        assert ConfigExt.get_env(:config_ext, @env, "bar") === "bar-:a-:b"
+      end
+    end
+
+    test "config: {:system, #{@env}}, #{@env}=nil, default: 'bar', returns 'bar'" do
+      with_app {:system, @env}, fn ->
+        assert ConfigExt.get_env(:config_ext, @env, "bar") === "bar"
+      end
+    end
+  end
+
+  describe "ConfigExt.fetch_env/2" do
+    test "config: nil, returns :error" do
+      assert ConfigExt.fetch_env(:config_ext, @env) === :error
+    end
+
+    test "config: 'foo', returns {:ok, 'foo'}" do
+      with_app "foo", fn ->
+        assert ConfigExt.fetch_env(:config_ext, @env) === {:ok, "foo"}
+      end
+    end
+
+    test "config: {:system, #{@env}}, #{@env}=baz, returns {:ok, 'baz'}" do
+      with_env "baz", fn ->
+        with_app {:system, @env}, fn ->
+          assert ConfigExt.fetch_env(:config_ext, @env) === {:ok, "baz"}
+        end
+      end
+    end
+
+    test "config: {:function, ConfigExtTest, :some_args, [:a, :b]}, returns {:ok, 'bar-:a-:b'}" do
+      with_app {:function, ConfigExtTest, :some_args, [:a, :b]}, fn ->
+        assert ConfigExt.fetch_env(:config_ext, @env) === {:ok, "bar-:a-:b"}
+      end
+    end
+
+    test "config: {:system, #{@env}}, #{@env}=nil, returns :error" do
+      with_app {:system, @env}, fn ->
+        assert ConfigExt.fetch_env(:config_ext, @env) === :error
+      end
+    end
+  end
+
+  describe "ConfigExt.fetch_env!/2" do
+    test "config: nil, raises exception" do
+      assert_raise ArgumentError, fn ->
+        ConfigExt.fetch_env!(:config_ext, @env)
+      end
+    end
+
+    test "config: 'foo', returns 'foo'" do
+      with_app "foo", fn ->
+        assert ConfigExt.fetch_env!(:config_ext, @env) === "foo"
+      end
+    end
+
+    test "config: {:system, #{@env}}, #{@env}=baz, returns 'baz'" do
+      with_env "baz", fn ->
+        with_app {:system, @env}, fn ->
+          assert ConfigExt.fetch_env!(:config_ext, @env) === "baz"
+        end
+      end
+    end
+
+    test "config: {:function, ConfigExtTest, :some_args, [:a, :b]}, returns 'bar-:a-:b'" do
+      with_app {:function, ConfigExtTest, :some_args, [:a, :b]}, fn ->
+        assert ConfigExt.fetch_env!(:config_ext, @env) === "bar-:a-:b"
+      end
+    end
+
+    test "config: {:system, #{@env}}, #{@env}=nil, raises ArgumentError" do
+      assert_raise ArgumentError, fn ->
+        with_app {:system, @env}, fn ->
+          ConfigExt.fetch_env!(:config_ext, @env)
+        end
+      end
+    end
+  end
+
   defp with_env(val, funk) do
     System.put_env @env, val
     funk.()
   after
     System.delete_env @env
+  end
+
+  defp with_app(val, funk) do
+    Application.put_env :config_ext, @env, val
+    funk.()
+  after
+    Application.delete_env :config_ext, @env
   end
 end
