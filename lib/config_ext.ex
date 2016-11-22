@@ -4,6 +4,51 @@ defmodule ConfigExt do
   """
 
   @doc """
+  Same as `ConfigExt.load/1` but instead of tuple, returns the value directly and on `:error` raises `ArgumentError`.
+
+  ## Examples
+
+  Given `CONFIG_EXT_TEST=foo` is set in environment.
+
+      iex> ConfigExt.load!({:system, "CONFIG_EXT_TEST"})
+      "foo"
+
+  When `CONFIG_EXT_TEST` is not set.
+
+      iex> ConfigExt.load!({:system, "CONFIG_EXT_TEST"})
+      ** (ArgumentError) ENV Key: CONFIG_EXT_TEST is missing
+          (config_ext) lib/config_ext.ex:24: ConfigExt.load!/1
+  """
+  def load!(value) do
+    case load(value) do
+      {:ok, val} -> val
+      {:error, msg} -> raise ArgumentError, msg
+    end
+  end
+
+  @doc """
+  Same as `ConfigExt.load!/1` but will return default value instead of raising exception.
+
+  ## Examples
+
+  Given `CONFIG_EXT_TEST=foo` is set in environment.
+
+      iex> ConfigExt.load!({:system, "CONFIG_EXT_TEST"}, "bar")
+      "foo"
+
+  When `CONFIG_EXT_TEST` is not set.
+
+      iex> ConfigExt.load!({:system, "CONFIG_EXT_TEST"}, "bar")
+      "bar"
+  """
+  def load!(value, default) do
+    case load(value, default) do
+      {:ok, value} -> value
+      {:error, _}  -> default
+    end
+  end
+
+  @doc """
   Looks for dynamic patterns in input, when found - evals them - otherwise passes input forward. Supported input formats are:
 
       {:system, KEY}

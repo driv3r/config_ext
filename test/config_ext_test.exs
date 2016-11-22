@@ -143,6 +143,38 @@ defmodule ConfigExtTest do
     end
   end
 
+  describe "ConfigExt.load!/1" do
+    test "input: {:system, key}, returns value" do
+      with_env "foo-var", fn ->
+        assert ConfigExt.load!({:system, @env}) === "foo-var"
+      end
+    end
+
+    test "input: nil, returns nil" do
+      assert ConfigExt.load!(nil) === nil
+    end
+
+    test "input: that would give error" do
+      assert_raise ArgumentError, fn -> ConfigExt.load!({:system, nil}) end
+    end
+  end
+
+  describe "ConfigExt.load!/2" do
+    test "input: {:system, key}, returns value" do
+      with_env "foo-var", fn ->
+        assert ConfigExt.load!({:system, @env}, "bar") === "foo-var"
+      end
+    end
+
+    test "input: nil, returns nil" do
+      assert ConfigExt.load!(nil, "bar") === "bar"
+    end
+
+    test "input: that would give error" do
+      assert ConfigExt.load!({:system, nil}, "bar") === "bar"
+    end
+  end
+
   defp with_env(val, funk) do
     System.put_env @env, val
     funk.()
