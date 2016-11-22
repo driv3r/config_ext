@@ -245,7 +245,9 @@ defmodule ConfigExtTest do
 
   describe "ConfigExt.fetch_env!/2" do
     test "config: nil, raises exception" do
-      assert_raise ArgumentError, fn -> ConfigExt.fetch_env!(:config_ext, @env) end
+      assert_raise ArgumentError, fn ->
+        ConfigExt.fetch_env!(:config_ext, @env)
+      end
     end
 
     test "config: 'foo', returns 'foo'" do
@@ -268,7 +270,7 @@ defmodule ConfigExtTest do
       end
     end
 
-    test "config: {:system, #{@env}}, #{@env}=nil, returns 'bar'" do
+    test "config: {:system, #{@env}}, #{@env}=nil, raises ArgumentError" do
       assert_raise ArgumentError, fn ->
         with_app {:system, @env}, fn ->
           ConfigExt.fetch_env!(:config_ext, @env)
